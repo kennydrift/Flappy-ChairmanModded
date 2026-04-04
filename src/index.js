@@ -1,8 +1,3 @@
-document.getElementById('changesBtn').addEventListener('click', ()=>{
-  const overlay = document.getElementById('changesOverlay');
-  overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
-});
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -12,7 +7,6 @@ let topPipeImg = new Image();
 let bottomPipeImg = new Image();
 let gameOverImg = new Image(); gameOverImg.src = "assets/ui/game_over.png";
 
-const flapSound = new Audio("assets/music/hit.mp3");
 const hitSound = new Audio("assets/music/hit.mp3");
 let bgMusic;
 
@@ -23,7 +17,6 @@ let highScore = parseInt(localStorage.getItem("highScore")) || 0;
 let frame = 0;
 let gameInterval;
 let isGameOver = false;
-let isMuted = false;
 let showHitboxes = true;
 
 let pipeGap = 0.4; 
@@ -67,24 +60,16 @@ function startGame(){
   if(difficulty === "impossible") { pipeGap = 0.4; pipeSpeed = 25; pipeInterval = 10; }
 
   document.getElementById("menu").style.display = "none";
-  document.getElementById("creditBox").style.display = "none";
   document.getElementById("charPreviewBox").style.display = "none";
 
   resetGame();
-  if(!isMuted) bgMusic.play();
+  bgMusic.play();
   gameInterval = setInterval(update, 20);
 }
-
-document.getElementById("muteBtn").addEventListener("click", ()=>{
-  isMuted = !isMuted;
-  if(isMuted) bgMusic.pause();
-  else if(!isGameOver) bgMusic.play();
-});
 
 document.getElementById("playAgainBtn").addEventListener("click", ()=>{
   document.getElementById("playAgainBtn").style.display = "none";
   document.getElementById("menu").style.display = "flex";
-  document.getElementById("creditBox").style.display = "flex";
   document.getElementById("charPreviewBox").style.display = "block";
 });
 
@@ -100,8 +85,6 @@ function resetGame(){
 function flap(){
   if(!isGameOver){
     bird.velocity = bird.lift;
-    flapSound.currentTime = 0;
-    flapSound.play();
   }
 }
 
@@ -151,7 +134,7 @@ function update(){
     bird.y += bird.velocity;
 
     if(bird.y + bird.height > canvas.height || bird.y < -25){
-      hitSound.currentTime = 0; hitSound.play(); triggerGameOver();
+      triggerGameOver();
     }
 
     if(frame % pipeInterval === 0){
@@ -163,7 +146,7 @@ function update(){
       pipe.x -= pipeSpeed;
       if(bird.x < pipe.x + pipe.width && bird.x + bird.width > pipe.x){
         if(bird.y < pipe.top || bird.y + bird.height > canvas.height - pipe.bottom){
-          hitSound.currentTime = 0; hitSound.play(); triggerGameOver();
+          triggerGameOver();
         }
       }
       if(!pipe.scored && bird.x > pipe.x + pipe.width){
@@ -205,6 +188,8 @@ function triggerGameOver(){
   isGameOver = true;
   clearInterval(gameInterval);
   bgMusic.pause();
+  hitSound.currentTime = 0;
+  hitSound.play();
   if(score > highScore) { highScore = score; localStorage.setItem("highScore", highScore); }
 }
 
