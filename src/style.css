@@ -34,8 +34,8 @@ body {
 #menuCredits {
   position: absolute;
   top: 18px;
-  right: 18px; /* Changed this to right */
-  text-align: right; /* Changed this so the text lines up cleanly */
+  right: 18px;
+  text-align: right;
   font-size: 13px;
   color: #000000;
   line-height: 1.4;
@@ -142,9 +142,93 @@ button:hover {
   background: white;
 }
 
-/* Added styling for your special ability text */
 #abilityHint {
   margin: 0;
   font-size: 14px;
   color: #000000;
+}
+
+/* Main Mod Menu Container */
+#cheatMenu {
+  display: none; 
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  background: #ffffffee;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 100; 
+  min-width: 280px;
+  min-height: 200px;
+  width: 320px;
+  resize: both; 
+  overflow: auto;
+  flex-direction: column;
+  border: 1px solid #ccc;
+}
+
+#cheatMenuHeader {
+  position: relative;
+  background: transparent;
+  color: #333;
+  padding: 20px 10px 10px;
+  font-size: 28px;
+  font-weight: normal;
+  text-align: center;
+  letter-spacing: 1px;
+  cursor: grab;
+  user-select: none;
+}
+
+#cheatMenuHeader:active {
+  cursor: grabbing;
+}
+
+#resetScoreBtn {
+  position: absolute;
+  top: 25px;
+  right: 15px;
+  background: #ff4c4c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 0;
+}
+
+#resetScoreBtn:hover {
+  background: #e04343;
+}
+
+#cheatMenuContent {
+  padding: 15px 25px 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mod-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #333;
+}
+
+.mod-row input[type="number"],
+.mod-row select {
+  width: 110px;
+  padding: 6px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin: 0;
+}
+
+.mod-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }

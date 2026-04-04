@@ -5,7 +5,8 @@ let backgroundImg = new Image();
 let characterImg = new Image();
 let topPipeImg = new Image();
 let bottomPipeImg = new Image();
-let gameOverImg = new Image(); gameOverImg.src = "assets/ui/game_over.png";
+let gameOverImg = new Image(); 
+gameOverImg.src = "assets/ui/game_over.png";
 
 const hitSound = new Audio("assets/audio/hit.mp3");
 hitSound.preload = "auto";
@@ -23,11 +24,16 @@ let showHitboxes = true;
 
 // Special Ability Variables
 let abilityCooldown = 0; 
-const COOLDOWN_MAX = 500; // 500 frames at 20ms per frame = 10 seconds
+const COOLDOWN_MAX = 500; 
 
+// Game Difficulty Variables
 let pipeGap = 0.4; 
 let pipeSpeed = 3; 
 let pipeInterval = 180;
+
+// Mod Variables
+let isInvincible = false;
+let isReverseMode = false; // New reverse mode variable
 
 function resizeCanvas(){
   canvas.width = window.innerWidth;
@@ -42,23 +48,48 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 document.addEventListener("keydown", function(event) {
-  if (event.code === "Space") { event.preventDefault(); flap(); }
-  if (event.code === "KeyF") { showHitboxes = !showHitboxes; }
-  if (event.code === "KeyJ") { useAbility(); } // Trigger ability
+  if (event.code === "Tab" || event.key === "Tab") { 
+    event.preventDefault(); 
+    toggleCheatMenu(); 
+  }
+
+  if (event.code === "Space" || event.key === " ") { event.preventDefault(); flap(); }
+  if (event.code === "KeyF" || event.key === "f") { showHitboxes = !showHitboxes; }
+  if (event.code === "KeyJ" || event.key === "j") { useAbility(); } 
 });
+
 canvas.addEventListener("click", flap);
 
 function startGame(){
   const character = document.getElementById("character").value;
   characterImg.src = "assets/characters/" + character;
 
+  // Initialize and load custom background music
   if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
-
-  bgMusic = new Audio("assets/audio/Music.mp3");
+  bgMusic = new Audio();
   bgMusic.loop = true;
   bgMusic.preload = "auto";
   bgMusic.volume = 0.5;
-  backgroundImg.src = "assets/backgrounds/Background.png";
+
+  const currentMusic = document.getElementById("modMusic").value;
+  if (currentMusic.startsWith("blob:")) {
+    bgMusic.src = currentMusic;
+  } else if (currentMusic !== "upload") {
+    bgMusic.src = "assets/audio/" + currentMusic;
+  } else {
+    bgMusic.src = "assets/audio/Music.mp3"; // Fallback
+  }
+
+  // Load custom background
+  const currentBg = document.getElementById("modBackground").value;
+  if (currentBg.startsWith("blob:")) {
+    backgroundImg.src = currentBg;
+  } else if (currentBg !== "upload") {
+    backgroundImg.src = "assets/backgrounds/" + currentBg;
+  } else {
+    backgroundImg.src = "assets/backgrounds/Background.png"; 
+  }
+
   topPipeImg.src = "assets/pipes/tube2.png";
   bottomPipeImg.src = "assets/pipes/tube.png";
 
@@ -67,6 +98,9 @@ function startGame(){
   if(difficulty === "hard") { pipeGap = 0.35; pipeSpeed = 28; pipeInterval = 50; }
   if(difficulty === "extreme") { pipeGap = 0.4; pipeSpeed = 35; pipeInterval = 45; }
   if(difficulty === "impossible") { pipeGap = 0.4; pipeSpeed = 25; pipeInterval = 10; }
+
+  const modSpeedInput = document.getElementById("modSpeed");
+  if(modSpeedInput) modSpeedInput.value = pipeSpeed;
 
   document.getElementById("menu").style.display = "none";
   document.getElementById("charPreviewBox").style.display = "none";
@@ -83,18 +117,24 @@ document.getElementById("playAgainBtn").addEventListener("click", ()=>{
 });
 
 function resetGame(){
-  bird.y = canvas.height * 0.25;
+  // If reverse mode is active, spawn the bird near the bottom instead of the top
+  bird.y = isReverseMode ? canvas.height * 0.75 : canvas.height * 0.25;
   bird.velocity = 0;
   pipes = [];
   score = 0;
   frame = 0;
-  abilityCooldown = 0; // Reset cooldown on new game
+  abilityCooldown = 0; 
   isGameOver = false;
 }
 
 function flap(){
   if(!isGameOver){
-    bird.velocity = bird.lift;
+    // If reverse mode is on, flapping pushes you down (positive velocity)
+    if (isReverseMode) {
+      bird.velocity = Math.abs(bird.lift);
+    } else {
+      bird.velocity = bird.lift;
+    }
   }
 }
 
@@ -102,10 +142,9 @@ function useAbility() {
   if (isGameOver) return;
   const character = document.getElementById("character").value;
 
-  // Check if character is Trump and cooldown is at 0
   if (character === "Trump.png" && abilityCooldown <= 0) {
-    pipes = []; // Blows up all pipes currently on screen
-    abilityCooldown = COOLDOWN_MAX; // Reset the timer
+    pipes = []; 
+    abilityCooldown = COOLDOWN_MAX; 
   }
 }
 
@@ -117,18 +156,13 @@ function drawBird(){
     ctx.strokeRect(bird.x, bird.y, bird.width, bird.height);
   }
 
-  // Draw Cooldown Timer above the character's head
   if (abilityCooldown > 0 && document.getElementById("character").value === "Trump.png") {
     ctx.fillStyle = "red";
     ctx.font = "bold 24px 'Poppins', sans-serif";
     ctx.textAlign = "center";
-    
-    // Convert remaining frames back to seconds (50 frames per second)
     let secondsLeft = Math.ceil(abilityCooldown / 50); 
-    
-    // Draw the number above the bird's head
     ctx.fillText(secondsLeft, bird.x + (bird.width / 2), bird.y - 15);
-    ctx.textAlign = "start"; // Reset text alignment so score draws correctly
+    ctx.textAlign = "start"; 
   }
 }
 
@@ -137,7 +171,6 @@ function drawPipes(){
     ctx.drawImage(topPipeImg, pipe.x, 0, pipe.width, pipe.top);
     ctx.drawImage(bottomPipeImg, pipe.x, canvas.height - pipe.bottom, pipe.width, pipe.bottom);
 
-    // Tint upcoming 10th pipe yellow
     if((score + 1) % 10 === 0 && !pipe.scored){
       ctx.fillStyle = "rgba(255, 255, 0, 0.4)";
       ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
@@ -166,15 +199,32 @@ function update(){
   ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
   if(!isGameOver){
-    bird.velocity += bird.gravity;
+    
+    // Invert gravity logic for reverse mode
+    if (isReverseMode) {
+      bird.velocity -= Math.abs(bird.gravity); // Gravity pulls you UP
+    } else {
+      bird.velocity += bird.gravity; // Gravity pulls you DOWN
+    }
+    
     bird.y += bird.velocity;
 
-    // Decrease the cooldown timer if it's active
-    if (abilityCooldown > 0) {
+    if (isInvincible) {
+      if (bird.y + bird.height > canvas.height) {
+        bird.y = canvas.height - bird.height;
+        bird.velocity = isReverseMode ? -Math.abs(bird.lift) : bird.lift; 
+      }
+      if (bird.y < 0) {
+        bird.y = 0;
+        bird.velocity = isReverseMode ? Math.abs(bird.lift) : 0;
+      }
+    }
+
+    if(abilityCooldown > 0) {
       abilityCooldown--;
     }
 
-    if(bird.y + bird.height > canvas.height || bird.y < -25){
+    if(!isInvincible && (bird.y + bird.height > canvas.height || bird.y < -25)){
       triggerGameOver();
     }
 
@@ -196,6 +246,8 @@ function update(){
 
         if(score % 10 === 0){
           pipeSpeed += 0.5;
+          const modSpeedInput = document.getElementById("modSpeed");
+          if(modSpeedInput) modSpeedInput.value = pipeSpeed;
         }
       }
     });
@@ -225,10 +277,12 @@ function update(){
 }
 
 function triggerGameOver(){
+  if (isInvincible) return; 
+
   if(isGameOver) return;
   isGameOver = true;
   clearInterval(gameInterval);
-  bgMusic.pause();
+  if (bgMusic) bgMusic.pause();
   hitSound.currentTime = 0;
   hitSound.play();
   if(score > highScore) {
@@ -240,3 +294,149 @@ function triggerGameOver(){
 document.getElementById("character").addEventListener("change", (e)=>{
   document.getElementById("charPreview").src = "assets/characters/" + e.target.value;
 });
+
+// --- CHEAT MENU LOGIC ---
+function toggleCheatMenu() {
+  const cheatMenu = document.getElementById("cheatMenu");
+  
+  if (!cheatMenu) {
+    return;
+  }
+
+  if (window.getComputedStyle(cheatMenu).display === "none") {
+    cheatMenu.style.display = "flex";
+  } else {
+    cheatMenu.style.display = "none";
+  }
+}
+
+// Dragging Logic
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+document.addEventListener("mousedown", (e) => {
+  const cheatHeader = document.getElementById("cheatMenuHeader");
+  if (e.target === cheatHeader) {
+    isDragging = true;
+    const cheatMenu = document.getElementById("cheatMenu");
+    const rect = cheatMenu.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  }
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  const cheatMenu = document.getElementById("cheatMenu");
+  cheatMenu.style.left = `${e.clientX - offsetX}px`;
+  cheatMenu.style.top = `${e.clientY - offsetY}px`;
+});
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+});
+
+// --- MOD MENU FUNCTIONALITY ---
+function resetHighScore() {
+  highScore = 0;
+  localStorage.setItem("highScore", 0);
+  const hsInput = document.getElementById("modHighScore");
+  if (hsInput) hsInput.value = ""; 
+}
+
+function updateSpeed(val) {
+  if (val === "") return; 
+  pipeSpeed = parseFloat(val);
+}
+
+function toggleInvincibility(checked) {
+  isInvincible = checked;
+}
+
+function toggleReverseMode(checked) {
+  isReverseMode = checked;
+}
+
+function setCustomHighScore(val) {
+  let newScore = parseInt(val);
+  if (!isNaN(newScore)) {
+    highScore = newScore;
+    localStorage.setItem("highScore", newScore);
+  }
+}
+
+// Background Mod Logic
+function changeBackground(bgValue) {
+  if (bgValue === "upload") {
+    document.getElementById("bgUploader").click();
+    return;
+  }
+  if (bgValue.startsWith("blob:")) {
+    backgroundImg.src = bgValue;
+  } else {
+    backgroundImg.src = "assets/backgrounds/" + bgValue;
+  }
+}
+
+function handleBackgroundUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return; 
+
+  const url = URL.createObjectURL(file);
+  backgroundImg.src = url;
+  
+  const select = document.getElementById("modBackground");
+  const newOption = document.createElement("option");
+  newOption.value = url;
+  newOption.text = file.name; 
+  
+  const uploadOpt = Array.from(select.options).find(opt => opt.value === 'upload');
+  select.insertBefore(newOption, uploadOpt);
+  
+  select.value = url;
+  event.target.value = ""; 
+}
+
+// Music Mod Logic
+function changeMusic(musicValue) {
+  if (musicValue === "upload") {
+    document.getElementById("musicUploader").click();
+    return;
+  }
+  
+  // If the game is currently playing, update the music live
+  if (bgMusic && !bgMusic.paused) {
+    if (musicValue.startsWith("blob:")) {
+      bgMusic.src = musicValue;
+    } else {
+      bgMusic.src = "assets/audio/" + musicValue;
+    }
+    bgMusic.play();
+  }
+}
+
+function handleMusicUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return; 
+
+  const url = URL.createObjectURL(file);
+  
+  const select = document.getElementById("modMusic");
+  const newOption = document.createElement("option");
+  newOption.value = url;
+  newOption.text = file.name; 
+  
+  const uploadOpt = Array.from(select.options).find(opt => opt.value === 'upload');
+  select.insertBefore(newOption, uploadOpt);
+  
+  select.value = url;
+  
+  // If the game is currently playing, update the music live
+  if (bgMusic && !bgMusic.paused) {
+    bgMusic.src = url;
+    bgMusic.play();
+  }
+  
+  event.target.value = ""; 
+}

@@ -18,14 +18,24 @@
   <h1>Flappy Chairman</h1>
   <label>Select Character</label>
   <select id="character">
-    <option value="flappybird.png">Flappy Bird</option>
     <option value="Mao.png">🇨🇳 Chairman Mao</option>
     <option value="Jinping.png">🇨🇳 Xi Jinping</option>
     <option value="Trump.png">🇺🇸 Donald Trump</option>
+    <option value="kim.png">🇰🇵 Kim Jong Un</option>
+    <option value="Gojo.png">Satoru Gojo</option>
+    <option value="spongebob.png">SpongeBob</option>
+    <option value="invincible.png">Invincible</option>
+    <option value="Baldi.png">Baldi</option>
+    <option value="Nyancat.png">Nyancat</option>
+    <option value="Osaka.png">Osaka</option>
+    <option value="Plane.png">Plane</option>
+    <option value="Shrek.png">Shrek</option>
+    <option value="Teto.png">Teto</option>
+    <option value="Yoshi.png">Yoshi</option>
   </select>
 
   <div id="charPreviewBox">
-    <img id="charPreview" src="assets/characters/flappybird.png" alt="Character Preview">
+    <img id="charPreview" src="assets/characters/Mao.png" alt="Character Preview">
   </div>
 
   <label>Select Difficulty</label>
@@ -36,13 +46,63 @@
     <option value="impossible">Literally Impossible</option>
   </select>
 
-  <p id="abilityHint"><em>To use special abilities, press "J"</em></p>
+  <p id="abilityHint"><em>To use mods press "TAB"</em></p>
 
   <button onclick="startGame()">Play</button>
 </div>
 
 <button id="playAgainBtn">Play Again</button>
 <canvas id="gameCanvas"></canvas>
+
+<div id="cheatMenu">
+  <div id="cheatMenuHeader">
+    Mods
+    <button id="resetScoreBtn" onclick="resetHighScore()">Reset</button>
+  </div>
+  <div id="cheatMenuContent">
+    
+    <div class="mod-row">
+      <label for="modSpeed">Speed:</label>
+      <input type="number" id="modSpeed" oninput="updateSpeed(this.value)">
+    </div>
+
+    <div class="mod-row">
+      <label for="modInvincible">Invincibility:</label>
+      <input type="checkbox" id="modInvincible" onchange="toggleInvincibility(this.checked)">
+    </div>
+    
+    <div class="mod-row">
+      <label for="modReverse">Reverse Mode:</label>
+      <input type="checkbox" id="modReverse" onchange="toggleReverseMode(this.checked)">
+    </div>
+
+    <div class="mod-row">
+      <label for="modHighScore">Set Highscore:</label>
+      <input type="number" id="modHighScore" placeholder="Enter score" onchange="setCustomHighScore(this.value)">
+    </div>
+
+    <div class="mod-row">
+      <label for="modBackground">Background:</label>
+      <select id="modBackground" onchange="changeBackground(this.value)">
+        <option value="Background.png">XP</option>
+        <option value="fortnite.jpg">Fortnite</option>
+        <option value="bikinibottom.jpg">Bikini Bottom</option>
+        <option value="upload">- Upload -</option>
+      </select>
+      <input type="file" id="bgUploader" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
+    </div>
+
+    <div class="mod-row">
+      <label for="modMusic">Music:</label>
+      <select id="modMusic" onchange="changeMusic(this.value)">
+        <option value="Music.mp3">Default Music</option>
+        <option value="upload">- Upload -</option>
+      </select>
+      <input type="file" id="musicUploader" accept="audio/*" style="display: none;" onchange="handleMusicUpload(event)">
+    </div>
+
+  </div>
+</div>
 
 <script src="src/index.js"></script>
 </body>
