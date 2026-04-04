@@ -10,9 +10,9 @@ let backgroundImg = new Image();
 let characterImg = new Image();
 let topPipeImg = new Image();
 let bottomPipeImg = new Image();
-let gameOverImg = new Image(); gameOverImg.src = "game_over.png";
+let gameOverImg = new Image(); gameOverImg.src = "assets/ui/game_over.png";
 
-const flapSound = new Audio("assets/music/flap.mp3");
+const flapSound = new Audio("assets/music/hit.mp3");
 const hitSound = new Audio("assets/music/hit.mp3");
 let bgMusic;
 
@@ -42,29 +42,28 @@ function resizeCanvas(){
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+document.addEventListener("keydown", function(event) {
+  if (event.code === "Space") { event.preventDefault(); flap(); }
+  if (event.code === "KeyF") { showHitboxes = !showHitboxes; }
+});
+canvas.addEventListener("click", flap);
+
 function startGame(){
   const character = document.getElementById("character").value;
   characterImg.src = "assets/characters/" + character;
 
   if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
 
-  if (character === "Roaring.png") {
-    bgMusic = new Audio("assets/music/roaring.mp3");
-    backgroundImg.src = "assets/backgrounds/roaring_bg.png";
-    topPipeImg.src = "assets/pipes/roaring_top_pipe.png";
-    bottomPipeImg.src = "assets/pipes/roaring_bottom_pipe.png";
-  } else {
-    bgMusic = new Audio("assets/music/Music.mp3");
-    backgroundImg.src = "assets/backgrounds/Background.png";
-    topPipeImg.src = "assets/pipes/tube2.png";
-    bottomPipeImg.src = "assets/pipes/tube.png";
-  }
+  bgMusic = new Audio("assets/music/Music.mp3");
+  backgroundImg.src = "assets/backgrounds/Background.png";
+  topPipeImg.src = "assets/pipes/tube2.png";
+  bottomPipeImg.src = "assets/pipes/tube.png";
   bgMusic.loop = true;
 
   const difficulty = document.getElementById("difficulty").value;
-  if(difficulty === "normal") { pipeGap = 0.45; pipeSpeed = 200; pipeInterval = 180; }
-  if(difficulty === "hard") { pipeGap = 0.35; pipeSpeed = 25; pipeInterval = 150; }
-  if(difficulty === "extreme") { pipeGap = 0.4; pipeSpeed = 30; pipeInterval = 40; }
+  if(difficulty === "normal") { pipeGap = 0.45; pipeSpeed = 20; pipeInterval = 50; }
+  if(difficulty === "hard") { pipeGap = 0.35; pipeSpeed = 28; pipeInterval = 50; }
+  if(difficulty === "extreme") { pipeGap = 0.4; pipeSpeed = 35; pipeInterval = 45; }
   if(difficulty === "impossible") { pipeGap = 0.4; pipeSpeed = 25; pipeInterval = 10; }
 
   document.getElementById("menu").style.display = "none";
@@ -74,12 +73,6 @@ function startGame(){
   resetGame();
   if(!isMuted) bgMusic.play();
   gameInterval = setInterval(update, 20);
-
-  document.addEventListener("keydown", function(event) {
-    if (event.code === "Space") { event.preventDefault(); flap(); }
-    if (event.code === "KeyF") { showHitboxes = !showHitboxes; }
-  });
-  canvas.addEventListener("click", flap);
 }
 
 document.getElementById("muteBtn").addEventListener("click", ()=>{
