@@ -7,7 +7,9 @@ let topPipeImg = new Image();
 let bottomPipeImg = new Image();
 let gameOverImg = new Image(); gameOverImg.src = "assets/ui/game_over.png";
 
-const hitSound = new Audio("assets/music/hit.mp3");
+const hitSound = new Audio("assets/audio/hit.mp3");
+hitSound.preload = "auto";
+hitSound.volume = 0.8;
 let bgMusic;
 
 let bird = { x: 0, y: 0, width: 0, height: 0, gravity: 0, lift: 0, velocity: 0 };
@@ -18,6 +20,10 @@ let frame = 0;
 let gameInterval;
 let isGameOver = false;
 let showHitboxes = true;
+
+// Special Ability Variables
+let abilityCooldown = 0; 
+const COOLDOWN_MAX = 500; // 500 frames at 20ms per frame = 10 seconds
 
 let pipeGap = 0.4; 
 let pipeSpeed = 3; 
@@ -38,6 +44,7 @@ resizeCanvas();
 document.addEventListener("keydown", function(event) {
   if (event.code === "Space") { event.preventDefault(); flap(); }
   if (event.code === "KeyF") { showHitboxes = !showHitboxes; }
+  if (event.code === "KeyJ") { useAbility(); } // Trigger ability
 });
 canvas.addEventListener("click", flap);
 
@@ -47,11 +54,13 @@ function startGame(){
 
   if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
 
-  bgMusic = new Audio("assets/music/Music.mp3");
+  bgMusic = new Audio("assets/audio/Music.mp3");
+  bgMusic.loop = true;
+  bgMusic.preload = "auto";
+  bgMusic.volume = 0.5;
   backgroundImg.src = "assets/backgrounds/Background.png";
   topPipeImg.src = "assets/pipes/tube2.png";
   bottomPipeImg.src = "assets/pipes/tube.png";
-  bgMusic.loop = true;
 
   const difficulty = document.getElementById("difficulty").value;
   if(difficulty === "normal") { pipeGap = 0.45; pipeSpeed = 20; pipeInterval = 50; }
@@ -79,6 +88,7 @@ function resetGame(){
   pipes = [];
   score = 0;
   frame = 0;
+  abilityCooldown = 0; // Reset cooldown on new game
   isGameOver = false;
 }
 
@@ -88,11 +98,37 @@ function flap(){
   }
 }
 
+function useAbility() {
+  if (isGameOver) return;
+  const character = document.getElementById("character").value;
+
+  // Check if character is Trump and cooldown is at 0
+  if (character === "Trump.png" && abilityCooldown <= 0) {
+    pipes = []; // Blows up all pipes currently on screen
+    abilityCooldown = COOLDOWN_MAX; // Reset the timer
+  }
+}
+
 function drawBird(){ 
   ctx.drawImage(characterImg, bird.x, bird.y, bird.width, bird.height); 
+  
   if(showHitboxes){
     ctx.strokeStyle = "green"; ctx.lineWidth = 2;
     ctx.strokeRect(bird.x, bird.y, bird.width, bird.height);
+  }
+
+  // Draw Cooldown Timer above the character's head
+  if (abilityCooldown > 0 && document.getElementById("character").value === "Trump.png") {
+    ctx.fillStyle = "red";
+    ctx.font = "bold 24px 'Poppins', sans-serif";
+    ctx.textAlign = "center";
+    
+    // Convert remaining frames back to seconds (50 frames per second)
+    let secondsLeft = Math.ceil(abilityCooldown / 50); 
+    
+    // Draw the number above the bird's head
+    ctx.fillText(secondsLeft, bird.x + (bird.width / 2), bird.y - 15);
+    ctx.textAlign = "start"; // Reset text alignment so score draws correctly
   }
 }
 
@@ -132,6 +168,11 @@ function update(){
   if(!isGameOver){
     bird.velocity += bird.gravity;
     bird.y += bird.velocity;
+
+    // Decrease the cooldown timer if it's active
+    if (abilityCooldown > 0) {
+      abilityCooldown--;
+    }
 
     if(bird.y + bird.height > canvas.height || bird.y < -25){
       triggerGameOver();
@@ -190,7 +231,10 @@ function triggerGameOver(){
   bgMusic.pause();
   hitSound.currentTime = 0;
   hitSound.play();
-  if(score > highScore) { highScore = score; localStorage.setItem("highScore", highScore); }
+  if(score > highScore) {
+    highScore = score;
+    localStorage.setItem("highScore", highScore);
+  }
 }
 
 document.getElementById("character").addEventListener("change", (e)=>{

@@ -8,6 +8,12 @@
 </head>
 <body>
 
+<div id="menuCredits">
+  Original by <a href="https://github.com/RightOnAether" target="_blank" rel="noopener noreferrer">Aether</a><br>
+  Modded port by <a href="https://github.com/kennydrift" target="_blank" rel="noopener noreferrer">kennydrift</a><br>
+  Version 1.0
+</div>
+
 <div id="menu">
   <h1>Flappy Chairman</h1>
   <label>Select Character</label>
@@ -28,22 +34,16 @@
     <option value="hard">Hard</option>
     <option value="extreme">Extreme</option>
     <option value="impossible">Literally Impossible</option>
-  </select><br>
+  </select>
+
+  <p id="abilityHint"><em>To use special abilities, press "J"</em></p>
+
   <button onclick="startGame()">Play</button>
 </div>
 
-<div id="hitboxText">Want a challenge? Press F to hide Hitboxes!</div>
 <button id="playAgainBtn">Play Again</button>
 <canvas id="gameCanvas"></canvas>
 
 <script src="src/index.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-

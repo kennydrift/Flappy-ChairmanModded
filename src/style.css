@@ -3,6 +3,8 @@ body {
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
   background: #f0f2f5;
+  height: 100vh;
+  width: 100vw;
 }
 
 #gameCanvas {
@@ -16,7 +18,7 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   background: #ffffffee;
-  padding: 30px 40px;
+  padding: 70px 40px 30px;
   border-radius: 20px;
   text-align: center;
   z-index: 2;
@@ -25,6 +27,28 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  width: min(520px, 90vw);
+  max-width: 520px;
+}
+
+#menuCredits {
+  position: absolute;
+  top: 18px;
+  right: 18px; /* Changed this to right */
+  text-align: right; /* Changed this so the text lines up cleanly */
+  font-size: 13px;
+  color: #000000;
+  line-height: 1.4;
+  z-index: 10;
+}
+
+#menuCredits a {
+  color: #4176d6;
+  text-decoration: none;
+}
+
+#menuCredits a:hover {
+  text-decoration: underline;
 }
 
 #menu h1 {
@@ -116,4 +140,11 @@ button:hover {
   border-radius: 12px;
   border: 2px solid #ccc;
   background: white;
+}
+
+/* Added styling for your special ability text */
+#abilityHint {
+  margin: 0;
+  font-size: 14px;
+  color: #000000;
 }
