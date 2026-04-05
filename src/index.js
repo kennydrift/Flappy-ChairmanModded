@@ -33,7 +33,7 @@ let pipeInterval = 180;
 
 // Mod Variables
 let isInvincible = false;
-let isReverseMode = false; // New reverse mode variable
+let isReverseMode = false; 
 
 function resizeCanvas(){
   canvas.width = window.innerWidth;
@@ -64,7 +64,6 @@ function startGame(){
   const character = document.getElementById("character").value;
   characterImg.src = "assets/characters/" + character;
 
-  // Initialize and load custom background music
   if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
   bgMusic = new Audio();
   bgMusic.loop = true;
@@ -77,10 +76,9 @@ function startGame(){
   } else if (currentMusic !== "upload") {
     bgMusic.src = "assets/audio/" + currentMusic;
   } else {
-    bgMusic.src = "assets/audio/Music.mp3"; // Fallback
+    bgMusic.src = "assets/audio/Music.mp3"; 
   }
 
-  // Load custom background
   const currentBg = document.getElementById("modBackground").value;
   if (currentBg.startsWith("blob:")) {
     backgroundImg.src = currentBg;
@@ -117,7 +115,6 @@ document.getElementById("playAgainBtn").addEventListener("click", ()=>{
 });
 
 function resetGame(){
-  // If reverse mode is active, spawn the bird near the bottom instead of the top
   bird.y = isReverseMode ? canvas.height * 0.75 : canvas.height * 0.25;
   bird.velocity = 0;
   pipes = [];
@@ -129,7 +126,6 @@ function resetGame(){
 
 function flap(){
   if(!isGameOver){
-    // If reverse mode is on, flapping pushes you down (positive velocity)
     if (isReverseMode) {
       bird.velocity = Math.abs(bird.lift);
     } else {
@@ -149,7 +145,16 @@ function useAbility() {
 }
 
 function drawBird(){ 
-  ctx.drawImage(characterImg, bird.x, bird.y, bird.width, bird.height); 
+  // Flip the character upside down if Reverse Mode is active
+  if (isReverseMode) {
+    ctx.save();
+    ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
+    ctx.scale(1, -1);
+    ctx.drawImage(characterImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
+    ctx.restore();
+  } else {
+    ctx.drawImage(characterImg, bird.x, bird.y, bird.width, bird.height); 
+  }
   
   if(showHitboxes){
     ctx.strokeStyle = "green"; ctx.lineWidth = 2;
@@ -196,15 +201,24 @@ function drawScore(){
 
 function update(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+  // Flip the background upside down if Reverse Mode is active
+  if (isReverseMode) {
+    ctx.save();
+    ctx.translate(0, canvas.height);
+    ctx.scale(1, -1);
+    ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  } else {
+    ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+  }
 
   if(!isGameOver){
     
-    // Invert gravity logic for reverse mode
     if (isReverseMode) {
-      bird.velocity -= Math.abs(bird.gravity); // Gravity pulls you UP
+      bird.velocity -= Math.abs(bird.gravity); 
     } else {
-      bird.velocity += bird.gravity; // Gravity pulls you DOWN
+      bird.velocity += bird.gravity; 
     }
     
     bird.y += bird.velocity;
@@ -405,7 +419,6 @@ function changeMusic(musicValue) {
     return;
   }
   
-  // If the game is currently playing, update the music live
   if (bgMusic && !bgMusic.paused) {
     if (musicValue.startsWith("blob:")) {
       bgMusic.src = musicValue;
@@ -432,7 +445,6 @@ function handleMusicUpload(event) {
   
   select.value = url;
   
-  // If the game is currently playing, update the music live
   if (bgMusic && !bgMusic.paused) {
     bgMusic.src = url;
     bgMusic.play();
